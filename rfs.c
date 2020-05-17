@@ -68,3 +68,32 @@ static struct super_operations const rfs_super_ops = {
 	.put_super = rfs_put_super,
 };
 
+
+static int __init rfs_init(void)
+{
+	int = register_filesystem(&rfs_type);
+	if (ret != 0)
+	{
+		pr_err("cannot register filesystem\n");
+		return ret;
+	}
+	pr_debug("rfs module loaded\n");
+	return 0;
+}
+
+
+static void __exit rfs_fini(void)
+{
+	int ret = unregister_filesystem(&rfs_type);
+	if (ret != 0)
+		pr_err("cannot unregister filesystem\n");
+	pr_debug("rfs module unloaded");
+}
+
+
+module_init(rfs_init);
+module_exit(rfs_exit);
+
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Roy Shama");
