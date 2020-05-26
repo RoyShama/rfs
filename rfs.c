@@ -42,7 +42,7 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 		pr_err("root creation failed\n");
 		return -ENOMEM;
 	}
-
+	pr_debug("rfs root\n");
 	return 0;
 }
 
@@ -87,7 +87,7 @@ static void __exit rfs_exit(void)
 	int ret = unregister_filesystem(&rfs_type);
 	if (ret != 0)
 		pr_err("cannot unregister filesystem\n");
-	pr_debug("rfs module unloaded");
+	pr_debug("rfs module unloaded\n");
 }
 
 
