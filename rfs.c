@@ -27,7 +27,7 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 	root = new_inode(sb);
 	if(!root)
 	{ 
-		pr_err("inode allocation failed\n");
+		pr_err("rfs inode allocation failed\n");
 		return -ENOMEM;
 	}
 
@@ -39,7 +39,7 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 	sb->s_root= d_make_root(root);
 	if (!sb->s_root)
 	{
-		pr_err("root creation failed\n");
+		pr_err("rfs root creation failed\n");
 		return -ENOMEM;
 	}
 	pr_debug("rfs root\n");
@@ -74,7 +74,7 @@ static int __init rfs_init(void)
 	int ret = register_filesystem(&rfs_type);
 	if (ret != 0)
 	{
-		pr_err("cannot register filesystem\n");
+		pr_err("rfs cannot register filesystem\n");
 		return ret;
 	}
 	pr_debug("rfs module loaded\n");
@@ -86,7 +86,7 @@ static void __exit rfs_exit(void)
 {
 	int ret = unregister_filesystem(&rfs_type);
 	if (ret != 0)
-		pr_err("cannot unregister filesystem\n");
+		pr_err("rfs cannot unregister filesystem\n");
 	pr_debug("rfs module unloaded\n");
 }
 
