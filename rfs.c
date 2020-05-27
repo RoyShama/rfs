@@ -8,7 +8,7 @@ static const unsigned long RFS_MAGIC_NUMBER = 0x13131313;
 
 static void rfs_put_super(struct super_block *sb)
 {
-	pr_debug("rfs super block destroyed\n");
+	printk("rfs super block destroyed\n");
 }
 
 
@@ -27,7 +27,7 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 	root = new_inode(sb);
 	if(!root)
 	{ 
-		pr_err("rfs inode allocation failed\n");
+		printk("rfs inode allocation failed\n");
 		return -ENOMEM;
 	}
 
@@ -39,10 +39,10 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 	sb->s_root= d_make_root(root);
 	if (!sb->s_root)
 	{
-		pr_err("rfs root creation failed\n");
+		printk("rfs root creation failed\n");
 		return -ENOMEM;
 	}
-	pr_debug("rfs root\n");
+	printk("rfs root\n");
 	return 0;
 }
 
@@ -53,9 +53,9 @@ static struct dentry* rfs_mount(struct file_system_type *type, int flags,
 	struct dentry *const entry = mount_bdev(type, flags, dev,
 						 data, &rfs_fill_sb);
 	if (IS_ERR(entry))
-		pr_err("rfs mounting failed\n");
+		printk("rfs mounting failed\n");
 	else
-		pr_debug("rfs mounted\n");
+		printk("rfs mounted\n");
 	return entry;
 }
 
@@ -74,10 +74,10 @@ static int __init rfs_init(void)
 	int ret = register_filesystem(&rfs_type);
 	if (ret != 0)
 	{
-		pr_err("rfs cannot register filesystem\n");
+		printk("rfs cannot register filesystem\n");
 		return ret;
 	}
-	pr_debug("rfs module loaded\n");
+	printk("rfs module loaded\n");
 	return 0;
 }
 
@@ -86,8 +86,8 @@ static void __exit rfs_exit(void)
 {
 	int ret = unregister_filesystem(&rfs_type);
 	if (ret != 0)
-		pr_err("rfs cannot unregister filesystem\n");
-	pr_debug("rfs module unloaded\n");
+		printk("rfs cannot unregister filesystem\n");
+	printk("rfs module unloaded\n");
 }
 
 
