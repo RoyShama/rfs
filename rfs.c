@@ -2,9 +2,22 @@
 #include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-
+#include <linux/slab.h>
 #define FS_NAME "rfs" // roy file system
 static const unsigned long RFS_MAGIC_NUMBER = 0x13131313;
+static int top_id = 0;
+
+typedef struct child{
+	const char* name;
+	struct inode* child_inode;
+}child;
+
+
+typedef struct child_arr{
+	int len;
+	child* arr;
+}child_arr;	
+
 
 static void rfs_put_super(struct super_block *sb)
 {
@@ -17,10 +30,47 @@ static struct super_operations const rfs_super_ops = {
 };
 
 
+static int simplefs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl)
+{
+	struct inode* new_file =NULL;
+	child new_child;
+	child_arr* new_arr = (child_arr*)kmalloc(sizeof(child_arr),GFP_KERNEL);
+	child_arr* old_arr = (child_arr*)dir->i_private;
+	child_arr* new_dir_arr;
+	new_file = new_inode(dir->i_sb);
+	if(!new_arr)
+	{ 
+		printk("rfs inode allocation failed\n");
+		return -ENOMEM;
+	}
+
+	new_file->i_ino = top_id++;
+	new_file->i_sb = dir->i_sb;
+	new_file->i_atime = new_file->i_mtime = new_file->i_ctime = current_time(new_file);
+	inode_init_owner(new_file, dir, mode);
+	
+	new_child.name = dentry->d_name.name;
+	new_child.child_inode = new_file;
+	new_arr->arr = (child*)kmalloc(sizeof(child)*++old_arr->len,GFP_KERNEL);
+	new_arr->len = old_arr->len;
+	memcpy(new_arr->arr,old_arr->arr,sizeof(child*)*(new_arr->len-1));
+	new_arr->arr[new_arr->len-1] = new_child;
+	dir->i_private = new_arr;
+	kfree(old_arr);
+	
+	if(mode == S_IFDIR){
+		new_dir_arr=(child_arr*)kmalloc(sizeof(child_arr),GFP_KERNEL);
+		new_file->i_private = new_dir_arr;
+		new_dir_arr->len = 0;
+	}
+	
+	return 0;
+}
+
 static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 {
 	struct inode *root = NULL;
-
+	child_arr* new_arr=(child_arr*)kmalloc(sizeof(child_arr),GFP_KERNEL);
 	sb->s_magic = RFS_MAGIC_NUMBER;
 	sb->s_op = &rfs_super_ops;
 
@@ -31,11 +81,12 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 		return -ENOMEM;
 	}
 
-	root->i_ino = 0;
+	root->i_ino = top_id++;
 	root->i_sb = sb;
 	root->i_atime = root->i_mtime = root->i_ctime = current_time(root);
 	inode_init_owner(root, NULL, S_IFDIR);
-
+	root->i_private = new_arr;
+	new_arr->len = 0;
 	sb->s_root= d_make_root(root);
 	if (!sb->s_root)
 	{
