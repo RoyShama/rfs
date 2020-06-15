@@ -30,7 +30,7 @@ static struct super_operations const rfs_super_ops = {
 };
 
 
-static int simplefs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl)
+static int rfs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl)
 {
 	struct inode* new_file =NULL;
 	child new_child;
