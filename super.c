@@ -3,20 +3,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#define FS_NAME "rfs" // roy file system
-static const unsigned long RFS_MAGIC_NUMBER = 0x13131313;
-static int top_id = 0;
-
-typedef struct child{
-	const char* name;
-	struct inode* child_inode;
-}child;
-
-
-typedef struct child_arr{
-	int len;
-	child* arr;
-}child_arr;	
+#include "rfs.h"
 
 
 static void rfs_put_super(struct super_block *sb)
@@ -67,6 +54,25 @@ static int rfs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bo
 	return 0;
 }
 
+
+static struct dentry* rfs_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
+{
+	child_arr* dir_arr = (child_arr*)dir->i_private;
+	int i;
+	for(i=0; i<dir_arr->len; ++i){
+		 if(strcmp(dir_arr->arr[i].name, dentry->d_name.name))
+		 	goto file_found;
+	}
+	
+	dentry = NULL;
+	return ERR_PTR(-EIO);
+	
+	file_found:
+		d_add(dentry, dir_arr->arr[i].child_inode);
+		return NULL;
+}
+
+
 static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 {
 	struct inode *root = NULL;
@@ -84,6 +90,7 @@ static int rfs_fill_sb(struct super_block *sb, void *data, int silent)
 	root->i_ino = top_id++;
 	root->i_sb = sb;
 	root->i_atime = root->i_mtime = root->i_ctime = current_time(root);
+	root->i_op = &rfs_inode_ops;
 	inode_init_owner(root, NULL, S_IFDIR);
 	root->i_private = new_arr;
 	new_arr->len = 0;
