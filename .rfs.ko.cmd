@@ -1,0 +1,1 @@
+cmd_/home/royshama/rfs/rfs.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000  --build-id  -T ./scripts/module-common.lds -o /home/royshama/rfs/rfs.ko /home/royshama/rfs/rfs.o /home/royshama/rfs/rfs.mod.o;  true
