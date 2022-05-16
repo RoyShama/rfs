@@ -1,8 +1,9 @@
-
+ccflags-y := -o3 $(CCFLAGS)
 obj-m := rfs.o
 rfs-objs := inode.o super.o
+
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) -C '$(LINUX_DIR)' M='$(M)'
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
